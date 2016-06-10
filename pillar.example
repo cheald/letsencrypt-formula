@@ -10,10 +10,8 @@ letsencrypt:
     www:
       - example.com
       - www.example.com
-    mail:
-      - imap.example.com
-      - smtp.example.com
-      - mail.example.com
-    intranet:
-      - intranet.example.com
-
+      - api.example.com
+  webroots:
+    example.com: /var/lib/www/example
+    www.example.com: /var/lib/www/example
+    api.example.com: /var/lib/www/example-api

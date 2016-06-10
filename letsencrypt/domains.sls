@@ -30,18 +30,24 @@
     - require:
       - file: /usr/local/bin/check_letsencrypt_cert.sh
 
+{% set webroots = salt['pillar.get']('letsencrypt:webroots', {}) %}
+{% set flags = salt['pillar.get']('letsencrypt:flags', []) %}
 {%
-  for setname, domainlist in salt['pillar.get'](
-    'letsencrypt:domainsets'
-  ).iteritems()
-%}
+  for setname, domainlist in salt['pillar.get']('letsencrypt:domainsets').iteritems() %}
+    {% for domain in domainlist %}
+      {% if webroots.get(domain, None) %}
+        {% do flags.append("-w " +  webroots[domain]) %}
+      {% endif %}
+      {% do flags.append("-d " + domain) %}
+    {% endfor %}
+
 
 create-initial-cert-{{ setname }}-{{ domainlist | join('+') }}:
   cmd.run:
     - unless: /usr/local/bin/check_letsencrypt_cert.sh {{ domainlist|join(' ') }}
     - name: {{
           letsencrypt.cli_install_dir
-        }}/letsencrypt-auto -d {{ domainlist|join(' -d ') }} certonly
+        }}/letsencrypt-auto  {{ flags | join(' ') }} certonly
     - cwd: {{ letsencrypt.cli_install_dir }}
     - require:
       - file: letsencrypt-config
